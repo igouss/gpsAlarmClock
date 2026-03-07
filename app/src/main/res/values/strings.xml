@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">GPS Alarm Clock</string>
+
+    <!-- Notification -->
+    <string name="alarm_channel_name">Alarm</string>
+    <string name="alarm_channel_description">Alarm notifications with sound and vibration</string>
+    <string name="alarm_notification_title">Alarm!</string>
+    <string name="alarm_notification_text">Your alarm is ringing</string>
+    <string name="dismiss">Dismiss</string>
+
+    <!-- Location -->
+    <string name="permission_location_rationale">Location access is required to trigger alarms based on your position.</string>
+
+    <!-- Main screen -->
+    <string name="alarms_title">Alarms</string>
+    <string name="add_alarm">Add alarm</string>
+    <string name="no_alarms">No alarms set</string>
+
+    <!-- Alarm types -->
+    <string name="type_full_week">Full Week</string>
+    <string name="type_workday">Workday</string>
+    <string name="type_weekend">Weekend</string>
+    <string name="type_date_range">Date Range</string>
+
+    <!-- Dialog -->
+    <string name="alarm_settings">Alarm Settings</string>
+    <string name="alarm_label_hint">Label (optional)</string>
+    <string name="alarm_type_label">Repeat</string>
+    <string name="start_date_hint">Start date</string>
+    <string name="end_date_hint">End date</string>
+    <string name="select_start_date">Select start date</string>
+    <string name="select_end_date">Select end date</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+
+    <!-- Alarm item -->
+    <string name="no_label">No label</string>
+
+    <!-- Delete dialog -->
+    <string name="delete_alarm_title">Delete alarm</string>
+    <string name="delete_alarm_message">Delete alarm \"%s\"?</string>
+    <string name="delete">Delete</string>
+
+    <!-- Geofence/legacy -->
+    <string name="add_alarm_zone">Add Alarm Zone</string>
+    <string name="no_alarm_zones">No alarm zones defined yet.</string>
+</resources>
