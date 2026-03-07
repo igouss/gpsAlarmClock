@@ -12,7 +12,7 @@ class AlarmScheduler(private val context: Context) {
 
     fun scheduleAlarm(alarm: Alarm) {
         if (!alarm.isEnabled) return
-        val triggerTime = computeNextTriggerTime(alarm) ?: return
+        val triggerTime = computeNextTriggerTime(alarm, Calendar.getInstance()) ?: return
         val pendingIntent = buildPendingIntent(alarm)
         alarmManager.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
@@ -38,9 +38,11 @@ class AlarmScheduler(private val context: Context) {
         )
     }
 
-    private fun computeNextTriggerTime(alarm: Alarm): Long? {
-        val now = Calendar.getInstance()
+    internal fun computeNextTriggerTime(alarm: Alarm, now: Calendar = Calendar.getInstance()): Long? {
+        if (!alarm.isEnabled) return null
+
         val candidate = Calendar.getInstance().apply {
+            timeInMillis = now.timeInMillis
             set(Calendar.HOUR_OF_DAY, alarm.hour)
             set(Calendar.MINUTE, alarm.minute)
             set(Calendar.SECOND, 0)
@@ -62,7 +64,7 @@ class AlarmScheduler(private val context: Context) {
         return null
     }
 
-    private fun isValidDay(alarm: Alarm, cal: Calendar): Boolean {
+    internal fun isValidDay(alarm: Alarm, cal: Calendar): Boolean {
         return when (alarm.alarmType) {
             AlarmType.FULL_WEEK -> true
             AlarmType.WORKDAY -> {
