@@ -117,18 +117,48 @@ gpsAlarmClock/
 │       └── gradle-wrapper.properties (Gradle 8.9-bin)
 └── app/
     ├── build.gradle.kts
+    ├── proguard-rules.pro
     └── src/main/
         ├── AndroidManifest.xml
         ├── kotlin/com/elendal/gpsalarmclock/
-        │   ├── MainActivity.kt
+        │   ├── Alarm.kt                      (Room entity)
+        │   ├── AlarmDao.kt
+        │   ├── AlarmDatabase.kt
+        │   ├── AlarmRepository.kt
+        │   ├── AlarmScheduler.kt
+        │   ├── AlarmReceiver.kt
+        │   ├── AlarmService.kt               (foreground service)
+        │   ├── AlarmType.kt                  (enum)
+        │   ├── AlarmTypeConverter.kt         (Room TypeConverter)
+        │   ├── AlarmViewModel.kt
+        │   ├── AlarmsAdapter.kt
+        │   ├── AddEditAlarmBottomSheet.kt
+        │   ├── BootReceiver.kt
+        │   ├── DismissAlarmReceiver.kt
         │   ├── GeofenceBroadcastReceiver.kt
-        │   └── AlarmService.kt
+        │   ├── GpsAlarmClockApp.kt           (Application class)
+        │   ├── MainActivity.kt
+        │   ├── MapPickerActivity.kt
+        │   └── PrivacyDisclosureActivity.kt
         └── res/
-            ├── layout/activity_main.xml
-            ├── values/strings.xml
-            ├── values/themes.xml
-            ├── values/colors.xml
-            └── drawable/ic_launcher_background.xml
+            ├── drawable/
+            │   ├── ic_arrow_back.xml
+            │   ├── ic_crosshair.xml
+            │   ├── ic_launcher_background.xml
+            │   └── ic_launcher_foreground.xml
+            ├── layout/
+            │   ├── activity_main.xml
+            │   ├── activity_map_picker.xml
+            │   ├── activity_privacy_disclosure.xml
+            │   ├── dialog_add_edit_alarm.xml
+            │   └── item_alarm.xml
+            ├── mipmap-anydpi-v26/
+            │   ├── ic_launcher.xml
+            │   └── ic_launcher_round.xml
+            └── values/
+                ├── colors.xml
+                ├── strings.xml
+                └── themes.xml
 ```
 
 Key versions:
@@ -183,4 +213,27 @@ avdmanager list avd
 
 # Install new SDK components
 sdkmanager "extras;google;google_play_services"
+```
+
+---
+
+## Release build & signing
+
+```bash
+# 1. Generate keystore (one-time)
+keytool -genkey -v \
+  -keystore ~/gps-alarm-release.jks \
+  -alias gps-alarm \
+  -keyalg RSA -keysize 2048 \
+  -validity 10000
+
+# 2. Add to ~/.gradle/gradle.properties
+GPS_ALARM_KEYSTORE=/home/elendal/gps-alarm-release.jks
+GPS_ALARM_KEY_ALIAS=gps-alarm
+GPS_ALARM_KEY_PASSWORD=your_password
+GPS_ALARM_STORE_PASSWORD=your_password
+
+# 3. Build signed AAB
+JAVA_HOME=/home/linuxbrew/.linuxbrew/opt/openjdk@17 ./gradlew bundleRelease
+# Output: app/build/outputs/bundle/release/app-release.aab
 ```
