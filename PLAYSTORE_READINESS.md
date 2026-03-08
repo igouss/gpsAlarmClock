@@ -15,6 +15,8 @@ Fix them in priority order. Each section is self-contained.
 | 7 | Background location disclosure — fix UI not updating after permission grant | ✅ Done | `AddEditAlarmBottomSheet.kt` — added `updateGeofenceVisibility()` call in the granted branch of `backgroundLocationPermissionLauncher` |
 | — | `MapPickerActivity` — replace deprecated `PreferenceManager.getDefaultSharedPreferences` (removed in API 29 compat lib) with `getSharedPreferences("osmdroid", MODE_PRIVATE)` | ✅ Done | `MapPickerActivity.kt` |
 | — | `MapPickerActivity` — fix OSMDroid `Polygon` API: `fillColor`/`strokeColor`/`strokeWidth` replaced with `fillPaint.color`/`outlinePaint.color`/`outlinePaint.strokeWidth` (circle overlay was broken) | ✅ Done | `MapPickerActivity.kt` |
+| 1 | Release keystore generated and configured | ✅ Done | `~/.gradle/gradle.properties` (outside repo); `app/build.gradle.kts` signing stub was already wired. `bundleRelease` builds and signs successfully. |
+| 9 | Graphical assets generated | ✅ Done | `store-assets/icon_512.png` (512×512), `store-assets/feature_graphic.png` (1024×500) — ready to upload in Play Console |
 
 ### 2026-03-07
 
@@ -464,13 +466,13 @@ adb exec-out screencap -p > /tmp/screenshot1.png
 ## Summary Checklist
 
 ```
-[x] 1. Generate keystore, add signing config to build.gradle.kts  (stub done; keystore is manual)
-[x] 2. Create mipmap-*/ icon directories with correct icon ref in manifest  (placeholder done; final art is manual)
-[ ] 3. Write and host privacy policy, link in Play Console  (manual — requires a public URL)
+[x] 1. Generate keystore, add signing config to build.gradle.kts  (keystore generated; bundleRelease signs cleanly)
+[x] 2. Create mipmap-*/ icon directories with correct icon ref in manifest  (adaptive icon; minSdk=26 so no per-density PNGs needed)
+[ ] 3. Write and host privacy policy, link in Play Console  (PENDING — privacy policy uploaded but URL not yet publicly reachable; verify GitHub Pages is enabled)
 [x] 4. Fix backup config: allowBackup=false
 [x] 5. Fix AlarmReceiver export: exported=false  (verified safe via explicit intent)
 [x] 6. Add location to AlarmService foregroundServiceType
 [x] 7. Add background location disclosure screen (PrivacyDisclosureActivity)  (wired; UI fix applied 2026-03-08)
 [x] 8. Enable isMinifyEnabled=true + isShrinkResources=true, add proguard-rules.pro keeps
-[ ] 9. Collect store listing assets and upload to Play Console  (manual)
+[x] 9. Graphical assets generated: store-assets/icon_512.png + store-assets/feature_graphic.png  (upload to Play Console; screenshots still needed)
 ```
