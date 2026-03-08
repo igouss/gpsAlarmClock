@@ -1,7 +1,9 @@
 package com.elendal.gpsalarmclock
 
+import android.Manifest
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.text.format.DateFormat
 import android.view.LayoutInflater
@@ -11,7 +13,9 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.TimePicker
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
@@ -88,6 +92,7 @@ class AddEditAlarmBottomSheet : BottomSheetDialogFragment() {
     private lateinit var tvLocationInfo: TextView
 
     // Must be registered before onCreateView
+
     private val mapPickerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             result.data?.let { intent ->
@@ -98,6 +103,27 @@ class AddEditAlarmBottomSheet : BottomSheetDialogFragment() {
                 updateLocationLabel()
             }
         }
+    }
+
+    private val privacyDisclosureLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            // User understood — now request the background location permission
+            backgroundLocationPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+        } else {
+            // User declined — uncheck the toggle and inform them
+            switchGeofence.isChecked = false
+            updateGeofenceVisibility()
+            Toast.makeText(requireContext(), "Geofence alarms require background location", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private val backgroundLocationPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (!granted) {
+            switchGeofence.isChecked = false
+            updateGeofenceVisibility()
+            Toast.makeText(requireContext(), "Geofence alarms require background location", Toast.LENGTH_SHORT).show()
+        }
+        // If granted, the toggle stays checked — nothing more to do
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -174,8 +200,21 @@ class AddEditAlarmBottomSheet : BottomSheetDialogFragment() {
         view.findViewById<TextInputLayout>(R.id.til_start_date).setEndIconOnClickListener { showStartDatePicker() }
         view.findViewById<TextInputLayout>(R.id.til_end_date).setEndIconOnClickListener { showEndDatePicker() }
 
-        switchGeofence.setOnCheckedChangeListener { _, _ ->
-            updateGeofenceVisibility()
+        switchGeofence.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                val bgPermission = Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                if (ContextCompat.checkSelfPermission(requireContext(), bgPermission) == PackageManager.PERMISSION_GRANTED) {
+                    // Already granted — proceed normally
+                    updateGeofenceVisibility()
+                } else {
+                    // Must show prominent disclosure before requesting background location
+                    val intent = Intent(requireContext(), PrivacyDisclosureActivity::class.java)
+                    privacyDisclosureLauncher.launch(intent)
+                    // Don't update visibility yet — wait for permission result
+                }
+            } else {
+                updateGeofenceVisibility()
+            }
         }
 
         btnSetLocation.setOnClickListener {

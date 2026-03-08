@@ -128,6 +128,71 @@ class AlarmListE2ETest {
             ))))
     }
 
+    // ── 4. Edit alarm ────────────────────────────────────────────────────────
+
+    @Test
+    fun editAlarm_tapItem_bottomSheetOpensWithExistingData() {
+        // Create an alarm first
+        onView(withId(R.id.fab_add_alarm)).perform(click())
+        onView(withId(R.id.et_label))
+            .perform(replaceText("Edit Me"), closeSoftKeyboard())
+        onView(withId(R.id.btn_save)).perform(click())
+
+        // Verify it appeared
+        onView(withId(R.id.recycler_alarms))
+            .check(matches(hasDescendant(withText("Edit Me"))))
+
+        // Tap the card to open the edit sheet (onItemClick → card click)
+        onView(withId(R.id.recycler_alarms))
+            .perform(
+                RecyclerViewActions.actionOnItemAtPosition<RecyclerView.ViewHolder>(
+                    0,
+                    clickChildViewWithId(R.id.card_alarm)
+                )
+            )
+
+        // Bottom sheet opens with existing label pre-filled
+        onView(withId(R.id.et_label))
+            .check(matches(isDisplayed()))
+        onView(withId(R.id.et_label))
+            .check(matches(withText("Edit Me")))
+    }
+
+    // ── 5. Delete alarm ──────────────────────────────────────────────────────
+
+    @Test
+    fun deleteAlarm_longPressItem_confirmDialog_alarmRemovedFromList() {
+        // Create an alarm
+        onView(withId(R.id.fab_add_alarm)).perform(click())
+        onView(withId(R.id.et_label))
+            .perform(replaceText("Delete Me"), closeSoftKeyboard())
+        onView(withId(R.id.btn_save)).perform(click())
+
+        // Verify it appeared
+        onView(withId(R.id.recycler_alarms))
+            .check(matches(hasDescendant(withText("Delete Me"))))
+
+        // Long-press the card to trigger delete confirmation
+        onView(withId(R.id.recycler_alarms))
+            .perform(
+                RecyclerViewActions.actionOnItemAtPosition<RecyclerView.ViewHolder>(
+                    0,
+                    ViewActions.longClick()
+                )
+            )
+
+        // Confirm the delete dialog
+        onView(withText(R.string.delete)).perform(click())
+
+        // Alarm should no longer be in the list
+        onView(withId(R.id.recycler_alarms))
+            .check(matches(androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility(
+                androidx.test.espresso.matcher.ViewMatchers.Visibility.VISIBLE
+            )))
+        onView(withId(R.id.recycler_alarms))
+            .check(matches(org.hamcrest.Matchers.not(hasDescendant(withText("Delete Me")))))
+    }
+
     // ── Helper ────────────────────────────────────────────────────────────────
 
     private fun clickChildViewWithId(id: Int): androidx.test.espresso.ViewAction {

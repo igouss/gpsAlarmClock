@@ -2,18 +2,12 @@ package com.elendal.gpsalarmclock
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
-import android.media.AudioAttributes
-import android.provider.Settings
 import androidx.core.app.ActivityCompat
-import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -24,8 +18,6 @@ class AlarmReceiver : BroadcastReceiver() {
 
     companion object {
         const val EXTRA_ALARM_ID = "extra_alarm_id"
-        const val CHANNEL_ID = "alarm_channel"
-        const val NOTIFICATION_ID_BASE = 1000
     }
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -61,9 +53,11 @@ class AlarmReceiver : BroadcastReceiver() {
                     // If location is null, fall through and ring (fail open)
                 }
 
-                // Ring the alarm
-                createNotificationChannel(context)
-                fireNotification(context, alarm)
+                // Ring the alarm via AlarmService
+                context.startForegroundService(Intent(context, AlarmService::class.java).apply {
+                    putExtra(AlarmService.EXTRA_ALARM_ID, alarm.id)
+                    putExtra(AlarmService.EXTRA_ALARM_LABEL, alarm.label)
+                })
 
                 // Reschedule for next occurrence
                 if (alarm.isEnabled) {
@@ -91,63 +85,5 @@ class AlarmReceiver : BroadcastReceiver() {
         } catch (e: Exception) {
             null
         }
-    }
-
-    private fun fireNotification(context: Context, alarm: Alarm) {
-        val dismissIntent = Intent(context, DismissAlarmReceiver::class.java).apply {
-            putExtra(EXTRA_ALARM_ID, alarm.id)
-        }
-        val dismissPendingIntent = PendingIntent.getBroadcast(
-            context,
-            alarm.id.toInt(),
-            dismissIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
-        val openIntent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-        }
-        val openPendingIntent = PendingIntent.getActivity(
-            context,
-            0,
-            openIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
-        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setContentTitle(context.getString(R.string.alarm_notification_title))
-            .setContentText(context.getString(R.string.alarm_notification_text))
-            .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
-            .setPriority(NotificationCompat.PRIORITY_MAX)
-            .setCategory(NotificationCompat.CATEGORY_ALARM)
-            .setContentIntent(openPendingIntent)
-            .addAction(android.R.drawable.ic_delete, context.getString(R.string.dismiss), dismissPendingIntent)
-            .setAutoCancel(false)
-            .setOngoing(true)
-            .build()
-
-        val notificationManager = context.getSystemService(NotificationManager::class.java)
-        notificationManager.notify(NOTIFICATION_ID_BASE + alarm.id.toInt(), notification)
-    }
-
-    private fun createNotificationChannel(context: Context) {
-        val audioAttributes = AudioAttributes.Builder()
-            .setUsage(AudioAttributes.USAGE_ALARM)
-            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-            .build()
-
-        val channel = NotificationChannel(
-            CHANNEL_ID,
-            context.getString(R.string.alarm_channel_name),
-            NotificationManager.IMPORTANCE_HIGH
-        ).apply {
-            description = context.getString(R.string.alarm_channel_description)
-            enableVibration(true)
-            vibrationPattern = longArrayOf(0, 500, 200, 500)
-            setSound(Settings.System.DEFAULT_ALARM_ALERT_URI, audioAttributes)
-        }
-
-        val manager = context.getSystemService(NotificationManager::class.java)
-        manager.createNotificationChannel(channel)
     }
 }

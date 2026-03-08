@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:gravity="center_vertical">
+
+    <TextView
+        android:id="@+id/tv_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Background Location Access"
+        android:textAppearance="?attr/textAppearanceHeadlineSmall"
+        android:paddingBottom="16dp" />
+
+    <TextView
+        android:id="@+id/tv_disclosure"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="GPS Alarm Clock accesses your location in the background to trigger alarms when you enter or leave a geographic area.\n\nThis happens even when the app is closed or not in use.\n\nYour location is never sent to any server — it is used only on this device to check geofence boundaries."
+        android:textAppearance="?attr/textAppearanceBodyMedium"
+        android:lineSpacingMultiplier="1.4"
+        android:paddingBottom="32dp" />
+
+    <Button
+        android:id="@+id/btn_understand"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="I Understand"
+        style="@style/Widget.Material3.Button" />
+
+    <Button
+        android:id="@+id/btn_decline"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="No Thanks (disable geofenced alarms)"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_marginTop="8dp" />
+
+</LinearLayout>

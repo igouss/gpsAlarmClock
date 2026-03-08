@@ -19,7 +19,7 @@ class GpsAlarmClockApp : Application() {
             .build()
 
         val alarmChannel = NotificationChannel(
-            AlarmReceiver.CHANNEL_ID,
+            AlarmService.CHANNEL_ID,
             getString(R.string.alarm_channel_name),
             NotificationManager.IMPORTANCE_HIGH
         ).apply {

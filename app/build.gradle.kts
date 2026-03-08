@@ -23,13 +23,27 @@ android {
         }
     }
 
+    signingConfigs {
+        create("release") {
+            val keystorePath = providers.gradleProperty("GPS_ALARM_KEYSTORE").orNull
+            if (keystorePath != null) {
+                storeFile = file(keystorePath)
+                storePassword = providers.gradleProperty("GPS_ALARM_STORE_PASSWORD").orNull ?: ""
+                keyAlias = providers.gradleProperty("GPS_ALARM_KEY_ALIAS").orNull ?: ""
+                keyPassword = providers.gradleProperty("GPS_ALARM_KEY_PASSWORD").orNull ?: ""
+            }
+        }
+    }
+
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 
@@ -65,6 +79,9 @@ dependencies {
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
     testImplementation("androidx.test:core:1.6.1")
     testImplementation("androidx.test:core-ktx:1.6.1")
+    testImplementation("io.mockk:mockk:1.13.10")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
+    testImplementation("androidx.room:room-testing:2.6.1")
 
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
