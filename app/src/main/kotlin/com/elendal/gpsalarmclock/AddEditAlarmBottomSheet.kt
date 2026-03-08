@@ -118,12 +118,13 @@ class AddEditAlarmBottomSheet : BottomSheetDialogFragment() {
     }
 
     private val backgroundLocationPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        if (!granted) {
+        if (granted) {
+            updateGeofenceVisibility()
+        } else {
             switchGeofence.isChecked = false
             updateGeofenceVisibility()
             Toast.makeText(requireContext(), "Geofence alarms require background location", Toast.LENGTH_SHORT).show()
         }
-        // If granted, the toggle stays checked — nothing more to do
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {

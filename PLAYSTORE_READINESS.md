@@ -6,7 +6,17 @@ Fix them in priority order. Each section is self-contained.
 
 ---
 
-## Changelog — Changes Applied (2026-03-07)
+## Changelog — Changes Applied
+
+### 2026-03-08
+
+| # | Item | Status | Files Changed |
+|---|------|--------|---------------|
+| 7 | Background location disclosure — fix UI not updating after permission grant | ✅ Done | `AddEditAlarmBottomSheet.kt` — added `updateGeofenceVisibility()` call in the granted branch of `backgroundLocationPermissionLauncher` |
+| — | `MapPickerActivity` — replace deprecated `PreferenceManager.getDefaultSharedPreferences` (removed in API 29 compat lib) with `getSharedPreferences("osmdroid", MODE_PRIVATE)` | ✅ Done | `MapPickerActivity.kt` |
+| — | `MapPickerActivity` — fix OSMDroid `Polygon` API: `fillColor`/`strokeColor`/`strokeWidth` replaced with `fillPaint.color`/`outlinePaint.color`/`outlinePaint.strokeWidth` (circle overlay was broken) | ✅ Done | `MapPickerActivity.kt` |
+
+### 2026-03-07
 
 All in-repo fixes have been applied. Build passes (`assembleDebug` clean). Remaining items require manual developer action outside the repo.
 
@@ -18,7 +28,7 @@ All in-repo fixes have been applied. Build passes (`assembleDebug` clean). Remai
 | 4 | Insecure backup | ✅ Done | `AndroidManifest.xml` (`allowBackup=false`) |
 | 5 | AlarmReceiver exported | ✅ Done | `AndroidManifest.xml` (`exported=false`, safe: AlarmScheduler uses explicit intent) |
 | 6 | AlarmService foregroundServiceType | ✅ Done | `AndroidManifest.xml` (`location\|mediaPlayback`) |
-| 7 | Background location disclosure | ✅ Done | New: `PrivacyDisclosureActivity.kt`, `activity_privacy_disclosure.xml`, `AndroidManifest.xml` |
+| 7 | Background location disclosure | ✅ Done | New: `PrivacyDisclosureActivity.kt`, `activity_privacy_disclosure.xml`, `AndroidManifest.xml`; wired into `AddEditAlarmBottomSheet.kt` |
 | 8 | ProGuard / R8 disabled | ✅ Done | `app/build.gradle.kts` (`isMinifyEnabled=true`, `isShrinkResources=true`), `proguard-rules.pro` |
 | 9 | Play Store listing assets | ⏳ Manual — screenshots, feature graphic, description, content rating in Play Console | — |
 
@@ -43,8 +53,6 @@ GPS_ALARM_STORE_PASSWORD=<password>
 **Launcher icon** — the current icon is a placeholder adaptive icon using the existing vector drawables. Replace with a real designed icon before submission. The 512×512 PNG for Play Console is separate (uploaded in Play Console, not in the APK).
 
 **Privacy policy** — write and host a public HTML page covering location data use. Link in Play Console → Store presence → Store settings → Privacy policy URL. Also complete the Background Location access justification form in Play Console.
-
-**PrivacyDisclosureActivity integration** — the Activity exists but is not yet wired into the permission request flow. Before requesting `ACCESS_BACKGROUND_LOCATION`, the app must launch `PrivacyDisclosureActivity` and only request the permission after the user taps "I Understand".
 
 ---
 
@@ -462,7 +470,7 @@ adb exec-out screencap -p > /tmp/screenshot1.png
 [x] 4. Fix backup config: allowBackup=false
 [x] 5. Fix AlarmReceiver export: exported=false  (verified safe via explicit intent)
 [x] 6. Add location to AlarmService foregroundServiceType
-[x] 7. Add background location disclosure screen (PrivacyDisclosureActivity)  (needs wiring into permission flow)
+[x] 7. Add background location disclosure screen (PrivacyDisclosureActivity)  (wired; UI fix applied 2026-03-08)
 [x] 8. Enable isMinifyEnabled=true + isShrinkResources=true, add proguard-rules.pro keeps
 [ ] 9. Collect store listing assets and upload to Play Console  (manual)
 ```

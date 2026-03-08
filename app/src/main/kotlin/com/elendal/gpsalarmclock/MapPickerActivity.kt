@@ -8,7 +8,6 @@ import android.content.pm.PackageManager
 import android.graphics.Color
 import android.location.Location
 import android.os.Bundle
-import android.preference.PreferenceManager
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -51,7 +50,7 @@ class MapPickerActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         // Initialize OSMDroid configuration
-        Configuration.getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this))
+        Configuration.getInstance().load(this, getSharedPreferences("osmdroid", MODE_PRIVATE))
         Configuration.getInstance().userAgentValue = packageName
 
         setContentView(R.layout.activity_map_picker)
@@ -128,9 +127,9 @@ class MapPickerActivity : AppCompatActivity() {
 
         val polygon = Polygon(mapView).apply {
             points = generateCirclePoints(centerGeoPoint, currentRadius.toDouble())
-            fillColor = 0x336750A4.toInt()
-            strokeColor = 0xFF6750A4.toInt()
-            strokeWidth = 3f
+            fillPaint.color = 0x336750A4.toInt()
+            outlinePaint.color = 0xFF6750A4.toInt()
+            outlinePaint.strokeWidth = 3f
         }
 
         circleOverlay = polygon
