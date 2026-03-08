@@ -16,7 +16,8 @@ Fix them in priority order. Each section is self-contained.
 | — | `MapPickerActivity` — replace deprecated `PreferenceManager.getDefaultSharedPreferences` (removed in API 29 compat lib) with `getSharedPreferences("osmdroid", MODE_PRIVATE)` | ✅ Done | `MapPickerActivity.kt` |
 | — | `MapPickerActivity` — fix OSMDroid `Polygon` API: `fillColor`/`strokeColor`/`strokeWidth` replaced with `fillPaint.color`/`outlinePaint.color`/`outlinePaint.strokeWidth` (circle overlay was broken) | ✅ Done | `MapPickerActivity.kt` |
 | 1 | Release keystore generated and configured | ✅ Done | `~/.gradle/gradle.properties` (outside repo); `app/build.gradle.kts` signing stub was already wired. `bundleRelease` builds and signs successfully. |
-| 9 | Graphical assets generated | ✅ Done | `store-assets/icon_512.png` (512×512), `store-assets/feature_graphic.png` (1024×500) — ready to upload in Play Console |
+| 9 | Graphical assets generated | ✅ Done | `store-assets/icon_512.png` (512×512), `store-assets/feature_graphic.png` (1024×500), 4 screenshots — ready to upload in Play Console |
+| 3 | Privacy policy published | ✅ Done | Hosted at https://igouss.github.io/gps-alarm-clock-privacy.html (HTTP 200). naxsoft.com CNAME removed from igouss.github.io repo. |
 
 ### 2026-03-07
 
@@ -468,11 +469,17 @@ adb exec-out screencap -p > /tmp/screenshot1.png
 ```
 [x] 1. Generate keystore, add signing config to build.gradle.kts  (keystore generated; bundleRelease signs cleanly)
 [x] 2. Create mipmap-*/ icon directories with correct icon ref in manifest  (adaptive icon; minSdk=26 so no per-density PNGs needed)
-[ ] 3. Write and host privacy policy, link in Play Console  (PENDING — privacy policy uploaded but URL not yet publicly reachable; verify GitHub Pages is enabled)
+[x] 3. Privacy policy hosted at https://igouss.github.io/gps-alarm-clock-privacy.html (HTTP 200). Link this URL in Play Console → Store presence → Store settings → Privacy policy URL. Also complete the Background Location form.
 [x] 4. Fix backup config: allowBackup=false
 [x] 5. Fix AlarmReceiver export: exported=false  (verified safe via explicit intent)
 [x] 6. Add location to AlarmService foregroundServiceType
 [x] 7. Add background location disclosure screen (PrivacyDisclosureActivity)  (wired; UI fix applied 2026-03-08)
 [x] 8. Enable isMinifyEnabled=true + isShrinkResources=true, add proguard-rules.pro keeps
-[x] 9. Graphical assets generated: store-assets/icon_512.png + store-assets/feature_graphic.png  (upload to Play Console; screenshots still needed)
+[x] 9. All graphical assets ready in store-assets/:
+       - icon_512.png (512x512 — upload to Play Console)
+       - feature_graphic.png (1024x500 — upload to Play Console)
+       - screenshot_1_main.png — empty alarm list
+       - screenshot_2_add_alarm.png — Add Alarm bottom sheet
+       - screenshot_3_alarm_list.png — alarm list with card
+       - screenshot_4_map_picker.png — geofence location picker
 ```
