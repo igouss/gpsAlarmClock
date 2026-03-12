@@ -5,6 +5,8 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(entities = [Alarm::class], version = 2, exportSchema = false)
 @TypeConverters(AlarmTypeConverter::class)
@@ -15,13 +17,19 @@ abstract class AlarmDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: AlarmDatabase? = null
 
+        val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                // No schema changes between version 1 and 2
+            }
+        }
+
         fun getDatabase(context: Context): AlarmDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AlarmDatabase::class.java,
                     "alarm_database"
-                ).fallbackToDestructiveMigration().build()
+                ).addMigrations(MIGRATION_1_2).build()
                 INSTANCE = instance
                 instance
             }

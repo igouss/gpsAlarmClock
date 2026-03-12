@@ -107,19 +107,36 @@ class AddEditAlarmBottomSheet : BottomSheetDialogFragment() {
 
     private val privacyDisclosureLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            // User understood — now request the background location permission
-            backgroundLocationPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+            // Check foreground location first — background is rejected without it
+            val fineGranted = ContextCompat.checkSelfPermission(
+                requireContext(), Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+            if (fineGranted) {
+                backgroundLocationPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+            } else {
+                foregroundLocationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+            }
         } else {
-            // User declined — uncheck the toggle and inform them
             switchGeofence.isChecked = false
             updateGeofenceVisibility()
             Toast.makeText(requireContext(), "Geofence alarms require background location", Toast.LENGTH_SHORT).show()
         }
     }
 
+    private val foregroundLocationPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) {
+            backgroundLocationPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+        } else {
+            switchGeofence.isChecked = false
+            updateGeofenceVisibility()
+            Toast.makeText(requireContext(), "Geofence alarms require location permission", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private val backgroundLocationPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         if (granted) {
             updateGeofenceVisibility()
+            launchMapPicker()
         } else {
             switchGeofence.isChecked = false
             updateGeofenceVisibility()
@@ -207,6 +224,7 @@ class AddEditAlarmBottomSheet : BottomSheetDialogFragment() {
                 if (ContextCompat.checkSelfPermission(requireContext(), bgPermission) == PackageManager.PERMISSION_GRANTED) {
                     // Already granted — proceed normally
                     updateGeofenceVisibility()
+                    if (!hasSelectedLocation) launchMapPicker()
                 } else {
                     // Must show prominent disclosure before requesting background location
                     val intent = Intent(requireContext(), PrivacyDisclosureActivity::class.java)
@@ -218,17 +236,20 @@ class AddEditAlarmBottomSheet : BottomSheetDialogFragment() {
             }
         }
 
-        btnSetLocation.setOnClickListener {
-            val intent = Intent(requireContext(), MapPickerActivity::class.java).apply {
-                putExtra(MapPickerActivity.EXTRA_LAT, selectedLat)
-                putExtra(MapPickerActivity.EXTRA_LNG, selectedLng)
-                putExtra(MapPickerActivity.EXTRA_RADIUS, selectedRadius)
-            }
-            mapPickerLauncher.launch(intent)
-        }
+        btnSetLocation.setOnClickListener { launchMapPicker() }
 
         btnSave.setOnClickListener { saveAlarm() }
         btnCancel.setOnClickListener { dismiss() }
+    }
+
+    private fun launchMapPicker() {
+        val intent = Intent(requireContext(), MapPickerActivity::class.java).apply {
+            putExtra(MapPickerActivity.EXTRA_LAT, selectedLat)
+            putExtra(MapPickerActivity.EXTRA_LNG, selectedLng)
+            putExtra(MapPickerActivity.EXTRA_RADIUS, selectedRadius)
+            putExtra(MapPickerActivity.EXTRA_CENTER_ON_USER, !hasSelectedLocation)
+        }
+        mapPickerLauncher.launch(intent)
     }
 
     private fun updateDateRangeVisibility() {

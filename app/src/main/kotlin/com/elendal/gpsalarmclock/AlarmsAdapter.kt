@@ -1,5 +1,6 @@
 package com.elendal.gpsalarmclock
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,13 +11,23 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.chip.Chip
 import com.google.android.material.materialswitch.MaterialSwitch
+import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Locale
 
 class AlarmsAdapter(
+    context: Context,
     private val onItemClick: (Alarm) -> Unit,
     private val onItemLongClick: (Alarm) -> Boolean,
     private val onToggle: (Alarm) -> Unit
 ) : ListAdapter<Alarm, AlarmsAdapter.AlarmViewHolder>(AlarmDiffCallback()) {
+
+    private val scheduler = AlarmScheduler(context)
+
+    companion object {
+        private val FMT_TIME = SimpleDateFormat("HH:mm", Locale.getDefault())
+        private val FMT_DAY_TIME = SimpleDateFormat("EEE HH:mm", Locale.getDefault())
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AlarmViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_alarm, parent, false)
@@ -33,6 +44,7 @@ class AlarmsAdapter(
         private val tvLabel: TextView = itemView.findViewById(R.id.tv_alarm_label)
         private val chipType: Chip = itemView.findViewById(R.id.chip_alarm_type)
         private val switchEnabled: MaterialSwitch = itemView.findViewById(R.id.switch_alarm_enabled)
+        private val tvNextAlarm: TextView = itemView.findViewById(R.id.tv_next_alarm)
 
         fun bind(alarm: Alarm) {
             tvTime.text = String.format(Locale.getDefault(), "%02d:%02d", alarm.hour, alarm.minute)
@@ -42,6 +54,19 @@ class AlarmsAdapter(
                 AlarmType.WORKDAY -> itemView.context.getString(R.string.type_workday)
                 AlarmType.WEEKEND -> itemView.context.getString(R.string.type_weekend)
                 AlarmType.DATE_RANGE -> itemView.context.getString(R.string.type_date_range)
+            }
+
+            // Next alarm time
+            if (!alarm.isEnabled) {
+                tvNextAlarm.visibility = View.GONE
+            } else {
+                val triggerMs = scheduler.computeNextTriggerTime(alarm)
+                tvNextAlarm.visibility = View.VISIBLE
+                tvNextAlarm.text = if (triggerMs != null) {
+                    formatNextAlarm(triggerMs)
+                } else {
+                    "Not scheduled"
+                }
             }
 
             // Avoid triggering listener during bind
@@ -57,6 +82,22 @@ class AlarmsAdapter(
 
             cardView.setOnClickListener { onItemClick(alarm) }
             cardView.setOnLongClickListener { onItemLongClick(alarm) }
+        }
+    }
+
+    private fun formatNextAlarm(triggerMs: Long): String {
+        val now = Calendar.getInstance()
+        val trigger = Calendar.getInstance().apply { timeInMillis = triggerMs }
+        val tomorrow = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, 1) }
+        return when {
+            trigger.get(Calendar.DAY_OF_YEAR) == now.get(Calendar.DAY_OF_YEAR) &&
+            trigger.get(Calendar.YEAR) == now.get(Calendar.YEAR) ->
+                "Today ${FMT_TIME.format(trigger.time)}"
+            trigger.get(Calendar.DAY_OF_YEAR) == tomorrow.get(Calendar.DAY_OF_YEAR) &&
+            trigger.get(Calendar.YEAR) == tomorrow.get(Calendar.YEAR) ->
+                "Tomorrow ${FMT_TIME.format(trigger.time)}"
+            else ->
+                FMT_DAY_TIME.format(trigger.time)
         }
     }
 

@@ -14,11 +14,34 @@ class AlarmScheduler(private val context: Context) {
         if (!alarm.isEnabled) return
         val triggerTime = computeNextTriggerTime(alarm, Calendar.getInstance()) ?: return
         val pendingIntent = buildPendingIntent(alarm)
-        alarmManager.setExactAndAllowWhileIdle(
-            AlarmManager.RTC_WAKEUP,
-            triggerTime,
-            pendingIntent
+        val showIntent = PendingIntent.getActivity(
+            context,
+            0,
+            Intent(context, MainActivity::class.java),
+            PendingIntent.FLAG_IMMUTABLE
         )
+        val alarmClockInfo = AlarmManager.AlarmClockInfo(triggerTime, showIntent)
+        alarmManager.setAlarmClock(alarmClockInfo, pendingIntent)
+    }
+
+    fun scheduleSnooze(alarmId: Long, alarmLabel: String, triggerMs: Long) {
+        val intent = Intent(context, AlarmReceiver::class.java).apply {
+            putExtra(AlarmReceiver.EXTRA_ALARM_ID, alarmId)
+            putExtra(AlarmReceiver.EXTRA_IS_SNOOZE, true)
+        }
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            alarmId.toInt() + 2,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        val showIntent = PendingIntent.getActivity(
+            context,
+            0,
+            Intent(context, MainActivity::class.java),
+            PendingIntent.FLAG_IMMUTABLE
+        )
+        alarmManager.setAlarmClock(AlarmManager.AlarmClockInfo(triggerMs, showIntent), pendingIntent)
     }
 
     fun cancelAlarm(alarm: Alarm) {

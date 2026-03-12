@@ -16,3 +16,10 @@
 
 # AlarmService
 -keep class com.elendal.gpsalarmclock.AlarmService { *; }
+
+# Room - keep generated implementations and converters
+-keep class * extends androidx.room.RoomDatabase { *; }
+-keep @androidx.room.Entity class * { *; }
+-keep @androidx.room.Dao interface * { *; }
+-keep class com.elendal.gpsalarmclock.AlarmTypeConverter { *; }
+-keep class com.elendal.gpsalarmclock.**_Impl { *; }

@@ -52,6 +52,17 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_alarm_label" />
 
+        <TextView
+            android:id="@+id/tv_next_alarm"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textSize="12sp"
+            android:textColor="@color/on_surface_variant"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/switch_alarm_enabled"
+            app:layout_constraintTop_toBottomOf="@id/chip_alarm_type" />
+
         <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/switch_alarm_enabled"
             android:layout_width="wrap_content"

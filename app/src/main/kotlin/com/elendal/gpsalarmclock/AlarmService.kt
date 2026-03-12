@@ -1,6 +1,7 @@
 package com.elendal.gpsalarmclock
 
 import android.annotation.SuppressLint
+import android.app.AlarmManager
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
@@ -8,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.media.AudioAttributes
 import android.media.MediaPlayer
+import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
 import android.os.VibrationEffect
@@ -24,6 +26,7 @@ class AlarmService : Service() {
 
     companion object {
         const val ACTION_DISMISS = "com.elendal.gpsalarmclock.ACTION_DISMISS_ALARM"
+        const val ACTION_SNOOZE = "com.elendal.gpsalarmclock.ACTION_SNOOZE_ALARM"
         const val EXTRA_ALARM_ID = "extra_alarm_id"
         const val EXTRA_ALARM_LABEL = "extra_alarm_label"
         const val NOTIFICATION_ID = 42
@@ -42,6 +45,19 @@ class AlarmService : Service() {
             return START_NOT_STICKY
         }
 
+        if (intent?.action == ACTION_SNOOZE) {
+            val alarmId = intent.getLongExtra(EXTRA_ALARM_ID, -1L)
+            val alarmLabel = intent.getStringExtra(EXTRA_ALARM_LABEL) ?: ""
+            val snoozeTime = System.currentTimeMillis() + 10 * 60 * 1000L
+            AlarmScheduler(this).scheduleSnooze(alarmId, alarmLabel, snoozeTime)
+            getSystemService(NotificationManager::class.java).cancel(NOTIFICATION_ID)
+            stopSelf()
+            return START_NOT_STICKY
+        }
+
+        // Already ringing — ignore duplicate start
+        if (mediaPlayer?.isPlaying == true) return START_NOT_STICKY
+
         val alarmId = intent?.getLongExtra(EXTRA_ALARM_ID, -1L) ?: -1L
         val alarmLabel = intent?.getStringExtra(EXTRA_ALARM_LABEL)
             ?: getString(R.string.alarm_notification_title)
@@ -54,6 +70,17 @@ class AlarmService : Service() {
             this,
             alarmId.toInt(),
             dismissIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val snoozeIntent = Intent(this, AlarmService::class.java).apply {
+            action = ACTION_SNOOZE
+            putExtra(EXTRA_ALARM_ID, alarmId)
+        }
+        val snoozePendingIntent = PendingIntent.getService(
+            this,
+            alarmId.toInt() + 1,
+            snoozeIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
@@ -74,12 +101,17 @@ class AlarmService : Service() {
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setContentIntent(openPendingIntent)
+            .addAction(android.R.drawable.ic_lock_idle_alarm, "Snooze 10 min", snoozePendingIntent)
             .addAction(android.R.drawable.ic_delete, getString(R.string.dismiss), dismissPendingIntent)
             .setAutoCancel(false)
             .setOngoing(true)
             .build()
 
-        startForeground(NOTIFICATION_ID, notification)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
+        } else {
+            startForeground(NOTIFICATION_ID, notification)
+        }
 
         startAlarmSound()
         startVibration()

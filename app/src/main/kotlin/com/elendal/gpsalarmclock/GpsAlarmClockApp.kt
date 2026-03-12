@@ -3,8 +3,6 @@ package com.elendal.gpsalarmclock
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.media.AudioAttributes
-import android.provider.Settings
 
 class GpsAlarmClockApp : Application() {
     override fun onCreate() {
@@ -13,10 +11,14 @@ class GpsAlarmClockApp : Application() {
     }
 
     private fun createNotificationChannels() {
-        val audioAttributes = AudioAttributes.Builder()
-            .setUsage(AudioAttributes.USAGE_ALARM)
-            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-            .build()
+        val manager = getSystemService(NotificationManager::class.java)
+
+        // Delete the channel if it was previously created with sound — Android ignores
+        // setSound(null) on an existing channel, so we must delete and recreate.
+        val existing = manager.getNotificationChannel(AlarmService.CHANNEL_ID)
+        if (existing?.sound != null) {
+            manager.deleteNotificationChannel(AlarmService.CHANNEL_ID)
+        }
 
         val alarmChannel = NotificationChannel(
             AlarmService.CHANNEL_ID,
@@ -24,12 +26,10 @@ class GpsAlarmClockApp : Application() {
             NotificationManager.IMPORTANCE_HIGH
         ).apply {
             description = getString(R.string.alarm_channel_description)
-            enableVibration(true)
-            vibrationPattern = longArrayOf(0, 500, 200, 500)
-            setSound(Settings.System.DEFAULT_ALARM_ALERT_URI, audioAttributes)
+            setSound(null, null)
+            enableVibration(false)
         }
 
-        val manager = getSystemService(NotificationManager::class.java)
         manager.createNotificationChannel(alarmChannel)
     }
 }

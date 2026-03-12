@@ -23,6 +23,7 @@ import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Polygon
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
+import java.io.File
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -32,6 +33,7 @@ class MapPickerActivity : AppCompatActivity() {
         const val EXTRA_LAT = "extra_lat"
         const val EXTRA_LNG = "extra_lng"
         const val EXTRA_RADIUS = "extra_radius"
+        const val EXTRA_CENTER_ON_USER = "extra_center_on_user"
     }
 
     private lateinit var mapView: MapView
@@ -52,6 +54,7 @@ class MapPickerActivity : AppCompatActivity() {
         // Initialize OSMDroid configuration
         Configuration.getInstance().load(this, getSharedPreferences("osmdroid", MODE_PRIVATE))
         Configuration.getInstance().userAgentValue = packageName
+        Configuration.getInstance().osmdroidTileCache = File(getExternalFilesDir(null), "osmdroid")
 
         setContentView(R.layout.activity_map_picker)
 
@@ -109,6 +112,10 @@ class MapPickerActivity : AppCompatActivity() {
                 return false
             }
         })
+
+        if (intent.getBooleanExtra(EXTRA_CENTER_ON_USER, false)) {
+            moveToCurrentLocation()
+        }
 
         btnUseCurrentLocation.setOnClickListener { moveToCurrentLocation() }
         btnConfirm.setOnClickListener { confirmLocation() }
